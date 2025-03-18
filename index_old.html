@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgroHelix calculator</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.7.16/dist/vuetify.min.css" />
+  </head>
+  <body>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.7.16/dist/vuetify.min.js"></script>
+
+    <div id="app">
+      <v-app>
+      <v-main>
+        
+      </v-main>
+      </v-app>
+    </div>
+
+    <script>
+      const { createApp, ref, computed } = Vue
+      const { createVuetify } = Vuetify
+
+      const vuetify = createVuetify()
+
+      createApp({
+        setup() {
+          const availableProductivity = ref([25, 50, 100, 150, 200])
+          const availableAugerLength = computed(() => Array.from(Array(51).keys()).slice(3))
+          const availableMotors = [
+            {
+              title: "Без двигуна",
+              value: 0
+            },
+            {
+              title: "1.1 кВт",
+              value: 1
+            }
+          ]
+
+          const distributionMechanism = ref({
+            included: false,
+            length: 0,
+            type: null
+          })
+
+          const isValid = ref(false)
+          const motor = ref(0)
+          const productivity = ref()
+          const augerLength = ref()
+
+          const price = computed(() => {
+            if (isValid.value) return productivity.value + augerLength.value
+            return false
+          })
+
+          return {
+            isValid,
+            availableAugerLength,
+            availableProductivity,
+            distributionMechanism,
+            availableMotors,
+            productivity,
+            augerLength,
+            motor,
+            price
+          }
+        }
+      }).use(vuetify).mount('#app')
+    </script>
+  </body>
+</html>
