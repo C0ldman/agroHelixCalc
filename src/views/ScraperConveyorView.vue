@@ -30,6 +30,9 @@ const price = computed(() => {
   if (isValid.value) return productivity.value + augerLength.value
   return false
 })
+
+
+
 </script>
 
 <template>

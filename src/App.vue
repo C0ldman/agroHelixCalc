@@ -1,5 +1,10 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
+import { useScrapperConveyorStore } from './stores/scrapperConveyor';
+
+const scrapperConveyor= useScrapperConveyorStore();
+scrapperConveyor.updateAll();
+
 </script>
 
 <template>
@@ -10,6 +15,7 @@ import { RouterLink, RouterView } from 'vue-router'
   </header>
 
   <RouterView />
+  <pre>{{ scrapperConveyor.mr }}</pre>
 </template>
 
 <style scoped>
