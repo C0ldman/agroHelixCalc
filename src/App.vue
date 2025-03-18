@@ -1,21 +1,17 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import { useScrapperConveyorStore } from './stores/scrapperConveyor';
-
-const scrapperConveyor= useScrapperConveyorStore();
-scrapperConveyor.updateAll();
 
 </script>
 
 <template>
   <header>
       <nav>
+        <a class="navbar-brand" href="https://agrohelix.com.ua/">Agrohelix</a>
         <RouterLink to="/scrapper-conveyor">Транспортер шкребковий</RouterLink>
       </nav>
   </header>
 
   <RouterView />
-  <pre>{{ scrapperConveyor.mr }}</pre>
 </template>
 
 <style scoped>

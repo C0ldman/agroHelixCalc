@@ -1,6 +1,10 @@
 
 <script setup>
 import { computed, ref } from 'vue'
+import { useScrapperConveyorStore } from '@/stores/scrapperConveyor';
+
+const scrapperConveyor= useScrapperConveyorStore();
+scrapperConveyor.updateAll();
 
 const availableProductivity = ref([25, 50, 100, 150, 200])
 const availableAugerLength = computed(() => Array.from(Array(51).keys()).slice(3))
@@ -41,7 +45,8 @@ const price = computed(() => {
     <v-card-text>
       <v-row>
         <v-col cols="12" sm="6">
-          <v-img src="" alt="Product image"></v-img>
+          <v-img src="banner22.jpg" alt="Product image"></v-img>
+          <pre>{{ scrapperConveyor.mr }}</pre>
         </v-col>
         <v-col cols="12" sm="6">
           <v-form v-model="isValid">

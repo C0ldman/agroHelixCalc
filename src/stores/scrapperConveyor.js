@@ -20,15 +20,16 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        prices.value = data.values.map((line) => {
-          return {
-            productivity: line[0],
-            conveyorType: line[1],
-            name: line[2],
-            calkPosition: line[3],
-            price: line[4],
-          }
-        })
+        prices.value = data.values
+          .map((line) => {
+            return {
+              productivity: line[0],
+              conveyorType: line[1],
+              name: line[2],
+              calkPosition: line[3],
+              price: line[4],
+            }
+          }).slice(1)
       })
       .catch((error) => console.error('Error:', error))
   }
@@ -39,13 +40,14 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        lengthKwt.value = data.values.map((line) => {
-          return {
-            prod: line[0],
-            l: line[1],
-            kWt: line[2],
-          }
-        })
+        lengthKwt.value = data.values
+          .map((line) => {
+            return {
+              prod: line[0],
+              l: line[1],
+              kWt: line[2],
+            }
+          }).slice(1)
       })
       .catch((error) => console.error('Error:', error))
   }
@@ -56,14 +58,15 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
     fetch(url)
       .then((response) => response.json())
       .then((data) => {
-        mr.value = data.values.map((line) => {
-          return {
-            name: line[0],
-            kWt: line[1],
-            gab: line[2],
-            price: line[3],
-          }
-        })
+        mr.value = data.values
+          .map((line) => {
+            return {
+              name: line[0],
+              kWt: line[1],
+              gab: line[2],
+              price: line[3],
+            }
+          }).slice(1)
       })
       .catch((error) => console.error('Error:', error))
   }

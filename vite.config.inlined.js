@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 import { fileURLToPath, URL } from "node:url";
 import { viteSingleFile } from "vite-plugin-singlefile"
 import VueDevTools from "vite-plugin-vue-devtools";
-import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
+import Vuetify from 'vite-plugin-vuetify'
 
 // https://vitejs.dev/config/
 export default defineConfig({
