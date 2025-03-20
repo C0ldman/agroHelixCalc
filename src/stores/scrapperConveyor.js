@@ -13,8 +13,10 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
   const prices = ref([])
   const lengthKwt = ref([])
   const mr = ref([])
+  const isLoading = ref(false)
 
   function updatePrices() {
+    isLoading.value = true;
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${pricesSpreadsheetId}/values/${pricesSheetName}?key=${apiKey}`
 
     fetch(url)
@@ -32,9 +34,11 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
           }).slice(1)
       })
       .catch((error) => console.error('Error:', error))
+      .finally(() => isLoading.value = false)
   }
 
   function updateLengthKwt() {
+    isLoading.value = true
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${lengthKwtSpreadsheetId}/values/${lengthKwtSheetName}?key=${apiKey}`
 
     fetch(url)
@@ -47,12 +51,15 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
               l: line[1],
               kWt: line[2],
             }
-          }).slice(1)
+          })
+          .slice(1)
       })
       .catch((error) => console.error('Error:', error))
+      .finally(() => (isLoading.value = false))
   }
 
   function updateMr() {
+    isLoading.value = true
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${mrSpreadsheetId}/values/${mrSheetName}?key=${apiKey}`
 
     fetch(url)
@@ -66,9 +73,11 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
               gab: line[2],
               price: line[3],
             }
-          }).slice(1)
+          })
+          .slice(1)
       })
       .catch((error) => console.error('Error:', error))
+      .finally(() => (isLoading.value = false))
   }
 
   function updateAll() {
@@ -77,5 +86,5 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
     updateMr()
   }
 
-  return { prices, lengthKwt, mr, updateLengthKwt, updatePrices, updateMr, updateAll }
+  return { prices, lengthKwt, mr, isLoading, updateLengthKwt, updatePrices, updateMr, updateAll }
 })
