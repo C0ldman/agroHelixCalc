@@ -12,7 +12,8 @@ import vueDevTools
   from 'vite-plugin-vue-devtools'
 import Vuetify
   from 'vite-plugin-vuetify'
-
+console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
+console.log(process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/");
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue({publicPath: process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/"}), vueDevTools(), Vuetify()],
@@ -33,5 +34,6 @@ export default defineConfig({
       },
     },
     emptyOutDir: true,
+    base: process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/",
   },
 })
