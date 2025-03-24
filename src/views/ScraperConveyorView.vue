@@ -1,20 +1,24 @@
-<script setup>
+<script
+  setup>
 import {
   computed,
   ref,
   watch,
   watchEffect
 } from 'vue'
-import { useScrapperConveyorStore } from '@/stores/scrapperConveyor'
+import {
+  useScrapperConveyorStore
+} from '@/stores/scrapperConveyor'
 
 const isValid = ref(false)
 const motor = ref(0)
 const productivity = ref(0)
 const transporterLength = ref(4)
-const conveyorType = ref('solid')
+const conveyorType = ref()
 const chainType = ref('')
 const reducerType = ref('')
 const reducerModel = ref('')
+const coverageType = ref([])
 
 const scrapperConveyor = useScrapperConveyorStore()
 scrapperConveyor.updateAll()
@@ -29,11 +33,28 @@ const availableProductivity = computed(() => {
 
 const availableTransporterLength = computed(() => Array.from(Array(51).keys()).slice(4))
 
-const availableByType = computed(() => {
+const availableByProductivity = computed(() => {
   return scrapperConveyor.prices.filter(
     (item) =>
-      item.conveyorType.split(',').includes(conveyorType.value) &&
       item.productivity === productivity.value,
+  )
+})
+
+const availableConveyorType = computed(() => {
+  const list = availableByProductivity.value.map((item) => item.conveyorType.split(',')).flat(Infinity);
+  const conveyor = Array.from(new Set(list.map(item => item.trim())));
+  return conveyor.map((item) => {
+    return {
+      value: item,
+      name: item === 'solid' ? 'Зварний' : 'Розбірний',
+    }
+  })
+})
+
+const availableByType = computed(() => {
+  return availableByProductivity.value.filter(
+    (item) =>
+      item.conveyorType.split(',').includes(conveyorType.value)
   )
 })
 
@@ -54,6 +75,14 @@ const reducerAvailable = computed(() =>
   Array.from(new Set(scrapperConveyor.mr.map((item) => item.name))),
 )
 
+const coverageAvailable = computed(() => {
+    const Regexp = /покриття|грунт/;
+    return availableByType.value.filter((item) => {
+      return Regexp.test(item.name)
+    })
+  }
+)
+
 const reducerModelAvailable = computed(() => {
   const reducers = scrapperConveyor.mr.filter((item) => item.name === reducerType.value)
   return reducers.map((reducer) => {
@@ -71,27 +100,51 @@ watch(reducerModelAvailable, () => {
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     productivity.value =
-      availableProductivity.value.length > 0 ? availableProductivity.value[0] : null
+      availableProductivity.value.length > 0 ? availableProductivity.value[0] : [];
+
+  }
+})
+
+watchEffect(() => {
+  if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     transporterLength.value =
-      availableTransporterLength.value.length > 0 ? availableTransporterLength.value[0] : null
+      availableTransporterLength.value.length > 0 ? availableTransporterLength.value[0] : []
     chainType.value =
       availableChain.value && availableChain.value.length > 0 ? availableChain.value[0] : null
-    reducerType.value = reducerAvailable.value[0]
+    reducerType.value = reducerAvailable.value[0];
+    coverageType.value = coverageAvailable.value.length > 0 ? coverageAvailable.value[0] : [];
+    conveyorType.value = availableConveyorType.value.length > 0 ? availableConveyorType.value[0].value : '';
   }
 })
 </script>
 
 <template>
-  <v-card class="ma-3" elevation="10" max-width="1200">
-    <v-card-title> Транспортер шкребковий </v-card-title>
+  <v-card
+    class="ma-3"
+    elevation="10"
+    max-width="1200">
+    <v-card-title>
+      Транспортер
+      шкребковий
+    </v-card-title>
     <v-card-text>
       <v-row>
-        <v-col cols="12" sm="6">
-          <v-img alt="Product image" src="banner22.jpg"></v-img>
+        <v-col
+          cols="12"
+          sm="6">
+          <v-img
+            alt="Product image"
+            src="banner22.jpg"></v-img>
         </v-col>
-        <v-col cols="12" sm="6">
-          <v-skeleton-loader v-if="scrapperConveyor.isLoading" type="article"></v-skeleton-loader>
-          <v-form v-else v-model="isValid">
+        <v-col
+          cols="12"
+          sm="6">
+          <v-skeleton-loader
+            v-if="scrapperConveyor.isLoading"
+            type="article"></v-skeleton-loader>
+          <v-form
+            v-else
+            v-model="isValid">
             <v-select
               v-model="productivity"
               :items="availableProductivity"
@@ -106,9 +159,13 @@ watchEffect(() => {
               label="Довжина транспортера"
             ></v-select>
 
-            <v-radio-group v-model="conveyorType" inline>
-              <v-radio label="Зварний" value="solid"></v-radio>
-              <v-radio label="Розбірний" value="collapsible"></v-radio>
+            <v-radio-group
+              v-model="conveyorType"
+              inline>
+              <v-radio
+                v-for="conveyor in availableConveyorType"
+                :label="conveyor.name"
+                :value="conveyor.value"></v-radio>
             </v-radio-group>
 
             <v-select
@@ -136,12 +193,15 @@ watchEffect(() => {
               ></v-select>
             </fieldset>
 
-            <v-radio-group v-model="reducerType" label="Тип редуктора" inline>
+            <v-radio-group
+              v-model="reducerType"
+              inline
+              label="Тип редуктора">
               <v-radio
                 v-for="reducerItem in reducerAvailable"
+                :key="reducerItem"
                 :label="reducerItem"
                 :value="reducerItem"
-                :key="reducerItem"
               />
             </v-radio-group>
 
@@ -151,37 +211,20 @@ watchEffect(() => {
               item-title="description"
               label="Редуктор"
             ></v-select>
-          </v-form>
 
-          <div>
-            scrapperConveyor:
-            {{ scrapperConveyor.isLoading }}
-          </div>
-          <div>
-            productivity:
-            {{ productivity }}
-          </div>
-          <div>
-            augerLength:
-            {{ transporterLength }}
-          </div>
-          <div>
-            distributionMechanism:
-            <pre>{{ distributionMechanism }}</pre>
-          </div>
-          <div>
-            motor:
-            {{ motor }}
-          </div>
-          <div>
-            isValid:
-            {{ isValid }}
-          </div>
-          <div>
-            reducerType:
-            {{ reducerAvailable }}
-            {{ reducerType }}
-          </div>
+            <v-radio-group
+              v-if="coverageAvailable?.length"
+              v-model="coverageType"
+              inline
+              label="Тип покриття">
+              <v-radio
+                v-for="coverageItem in coverageAvailable"
+                :key="coverageItem.name"
+                :label="coverageItem.name"
+                :value="coverageItem"
+              />
+            </v-radio-group>
+          </v-form>
         </v-col>
       </v-row>
     </v-card-text>
