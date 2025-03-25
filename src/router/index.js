@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+const baseUrl = process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/"
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(baseUrl),
   routes: [
     {
       path: '/scrapper-conveyor',

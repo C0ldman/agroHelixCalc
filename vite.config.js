@@ -16,7 +16,7 @@ console.log('process.env.NODE_ENV: ', process.env.NODE_ENV);
 console.log(process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/");
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue({publicPath: process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/"}), vueDevTools(), Vuetify()],
+  plugins: [vue(), vueDevTools(), Vuetify()],
   base: process.env.NODE_ENV === "production" ? "/agroHelixCalc/" : "/",
   resolve: {
     alias: {
@@ -32,6 +32,7 @@ export default defineConfig({
         manualChunks: {
           vuetify: ['vuetify'],
         },
+        input:fileURLToPath(new URL('index.html', import.meta.url))
       },
     },
     emptyOutDir: true,
