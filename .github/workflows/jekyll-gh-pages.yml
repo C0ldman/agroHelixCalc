@@ -33,10 +33,19 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Set up environment variables
+        run: |
+          echo "VITE_GOOGLE_API_KEY=${{ secrets.VITE_GOOGLE_API_KEY }}" >> .env
+          echo "VITE_PRICES_SPREADSHEET_ID=${{ secrets.VITE_PRICES_SPREADSHEET_ID }}" >> .env
+          echo "VITE_PRICES_SHEET_NAME=${{ secrets.VITE_PRICES_SHEET_NAME }}" >> .env
+          echo "VITE_LENGTH_KWT_SPREADSHEET_ID=${{ secrets.VITE_LENGTH_KWT_SPREADSHEET_ID }}" >> .env
+          echo "VITE_LENGTH_KWT_SHEET_NAME=${{ secrets.VITE_LENGTH_KWT_SHEET_NAME }}" >> .env
+          echo "VITE_MR_SPREADSHEET_ID=${{ secrets.VITE_MR_SPREADSHEET_ID }}" >> .env
+          echo "VITE_MR_SHEET_NAME=${{ secrets.VITE_MR_SHEET_NAME }}" >> .env
       - name: Build
         run: npm run build
       - name: Setup Pages
