@@ -72,7 +72,7 @@ const availableReducer = computed(() =>
 )
 
 const availableCoverage = computed(() => {
-    const Regexp = /покриття|грунт/;
+    const Regexp = /емаль|грунт|порошкове|цинк/;
     return availableByType.value.filter((item) => {
       return Regexp.test(item.name)
     })
