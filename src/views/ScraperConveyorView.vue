@@ -196,7 +196,7 @@ watchEffect(() => {
               :items="availableChain"
               :rules="[(value) => !!value || 'Обовʼязкове поле']"
               item-title="name"
-              item-value="name"
+              return-object
               label="Тип ланцюга"
             ></v-select>
 
@@ -233,6 +233,7 @@ watchEffect(() => {
               v-model="reducerModel"
               :items="availableReducerModel"
               item-title="description"
+              return-object
               label="Редуктор"
             ></v-select>
             </fieldset>
