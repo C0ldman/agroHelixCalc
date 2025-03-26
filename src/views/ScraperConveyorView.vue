@@ -11,7 +11,6 @@ import {
 } from '@/stores/scrapperConveyor'
 
 const isValid = ref(false)
-const motor = ref(0)
 const productivity = ref(0)
 const transporterLength = ref(4)
 const conveyorType = ref()
@@ -20,18 +19,16 @@ const reducerType = ref('')
 const reducerModel = ref('')
 const coverageType = ref([])
 
-const scrapperConveyor = useScrapperConveyorStore()
-scrapperConveyor.updateAll()
+const scrapperConveyor = useScrapperConveyorStore();
+scrapperConveyor.updateAll();
 
 const availableProductivity = computed(() => {
-  let value = [25, 50, 100, 150, 200, 300]
+  let value = [25, 50, 100, 150, 200, 300];
   if (scrapperConveyor.prices.length) {
     value = Array.from(new Set(scrapperConveyor.prices.map((item) => item.productivity)))
   }
   return value
 })
-
-const availableTransporterLength = computed(() => Array.from(Array(51).keys()).slice(4))
 
 const availableByProductivity = computed(() => {
   return scrapperConveyor.prices.filter(
@@ -39,6 +36,8 @@ const availableByProductivity = computed(() => {
       item.productivity === productivity.value,
   )
 })
+
+const availableTransporterLength = computed(() => Array.from(Array(51).keys()).slice(4))
 
 const availableConveyorType = computed(() => {
   const list = availableByProductivity.value.map((item) => item.conveyorType.split(',')).flat(Infinity);
@@ -53,8 +52,10 @@ const availableConveyorType = computed(() => {
 
 const availableByType = computed(() => {
   return availableByProductivity.value.filter(
-    (item) =>
-      item.conveyorType.split(',').includes(conveyorType.value)
+    (item) => {
+      const items = item.conveyorType.split(',').map(item => item.trim())
+      return items.includes(conveyorType.value)
+    }
   )
 })
 
@@ -62,20 +63,15 @@ const availableChain = computed(() => {
   return availableByType.value.filter((item) => item.name.startsWith('ланцюг'))
 })
 
-const distributionMechanism = ref({
-  included: false,
-  length: 2,
-})
-
-const distributionMechanismAvailableLength = computed(() =>
+const availableDistributionMechanismLength = computed(() =>
   Array.from(Array(transporterLength.value - 1).keys()).slice(2),
 )
 
-const reducerAvailable = computed(() =>
+const availableReducer = computed(() =>
   Array.from(new Set(scrapperConveyor.mr.map((item) => item.name))),
 )
 
-const coverageAvailable = computed(() => {
+const availableCoverage = computed(() => {
     const Regexp = /покриття|грунт/;
     return availableByType.value.filter((item) => {
       return Regexp.test(item.name)
@@ -83,7 +79,7 @@ const coverageAvailable = computed(() => {
   }
 )
 
-const reducerModelAvailable = computed(() => {
+const availableReducerModel = computed(() => {
   const reducers = scrapperConveyor.mr.filter((item) => item.name === reducerType.value)
   return reducers.map((reducer) => {
     return {
@@ -93,29 +89,49 @@ const reducerModelAvailable = computed(() => {
   })
 })
 
-watch(reducerModelAvailable, () => {
-  reducerModel.value = reducerModelAvailable.value[0]
+const distributionMechanism = ref({
+  included: false,
+  length: 2,
+})
+
+watch(availableReducerModel, () => {
+  reducerModel.value = availableReducerModel.value[0]
 })
 
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     productivity.value =
       availableProductivity.value.length > 0 ? availableProductivity.value[0] : [];
+  }
+})
 
+watchEffect(() => {
+  if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
+    conveyorType.value = availableConveyorType.value.length > 0 ? availableConveyorType.value[0].value : '';
+  }
+})
+
+watchEffect(() => {
+  if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
+    chainType.value =
+      availableChain.value && availableChain.value.length > 0 ? availableChain.value[0] : null;
   }
 })
 
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     transporterLength.value =
-      availableTransporterLength.value.length > 0 ? availableTransporterLength.value[0] : []
-    chainType.value =
-      availableChain.value && availableChain.value.length > 0 ? availableChain.value[0] : null
-    reducerType.value = reducerAvailable.value[0];
-    coverageType.value = coverageAvailable.value.length > 0 ? coverageAvailable.value[0] : [];
-    conveyorType.value = availableConveyorType.value.length > 0 ? availableConveyorType.value[0].value : '';
+      availableTransporterLength.value.length > 0 ? availableTransporterLength.value[0] : [];
+    reducerType.value = availableReducer.value[0];
   }
 })
+
+watchEffect(() => {
+  if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
+    coverageType.value = availableCoverage.value.length > 0 ? availableCoverage.value[0] : [];
+  }
+})
+
 </script>
 
 <template>
@@ -135,6 +151,13 @@ watchEffect(() => {
           <v-img
             alt="Product image"
             src="banner22.jpg"></v-img>
+          <div>productivity : <pre>{{productivity}}</pre></div>
+          <div>transporterLength: <pre>{{ transporterLength}}</pre></div>
+          <div>conveyorType :<pre>{{ conveyorType}}</pre></div>
+          <div>chainType: <pre>{{chainType}}</pre></div>
+          <div>distributionMechanism: <pre>{{ distributionMechanism }}</pre></div>
+          <div>reducerModel: <pre>{{reducerModel}}</pre></div>
+          <div>coverageType:<pre>{{coverageType}}</pre></div>
         </v-col>
         <v-col
           cols="12"
@@ -186,39 +209,41 @@ watchEffect(() => {
               <v-select
                 v-model="distributionMechanism.length"
                 :disabled="!distributionMechanism.included"
-                :items="distributionMechanismAvailableLength"
+                :items="availableDistributionMechanismLength"
                 append-icon="d"
                 label="Довжина, м"
                 prepend-icon="d"
               ></v-select>
             </fieldset>
 
-            <v-radio-group
-              v-model="reducerType"
-              inline
-              label="Тип редуктора">
-              <v-radio
-                v-for="reducerItem in reducerAvailable"
-                :key="reducerItem"
-                :label="reducerItem"
-                :value="reducerItem"
-              />
-            </v-radio-group>
+            <fieldset class="mt-3 mb-3 pa-2">
+              <v-radio-group
+                v-model="reducerType"
+                inline
+                label="Тип редуктора">
+                <v-radio
+                  v-for="reducerItem in availableReducer"
+                  :key="reducerItem"
+                  :label="reducerItem"
+                  :value="reducerItem"
+                />
+              </v-radio-group>
 
-            <v-select
+              <v-select
               v-model="reducerModel"
-              :items="reducerModelAvailable"
+              :items="availableReducerModel"
               item-title="description"
               label="Редуктор"
             ></v-select>
+            </fieldset>
 
             <v-radio-group
-              v-if="coverageAvailable?.length"
+              v-if="availableCoverage?.length"
               v-model="coverageType"
               inline
               label="Тип покриття">
               <v-radio
-                v-for="coverageItem in coverageAvailable"
+                v-for="coverageItem in availableCoverage"
                 :key="coverageItem.name"
                 :label="coverageItem.name"
                 :value="coverageItem"
