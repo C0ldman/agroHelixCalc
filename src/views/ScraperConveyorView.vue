@@ -37,8 +37,6 @@ const availableByProductivity = computed(() => {
   )
 })
 
-const availableTransporterLength = computed(() => Array.from(Array(51).keys()).slice(4))
-
 const availableConveyorType = computed(() => {
   const list = availableByProductivity.value.map((item) => item.conveyorType.split(',')).flat(Infinity);
   const conveyor = Array.from(new Set(list.map(item => item.trim())));
@@ -79,6 +77,14 @@ const availableCoverage = computed(() => {
   }
 )
 
+const availableLining = computed(() => {
+    const Regexp = /футерува́ння/;
+    return availableByType.value.filter((item) => {
+      return Regexp.test(item.name)
+    })
+  }
+)
+
 const availableReducerModel = computed(() => {
   const reducers = scrapperConveyor.mr.filter((item) => item.name === reducerType.value)
   return reducers.map((reducer) => {
@@ -92,6 +98,10 @@ const availableReducerModel = computed(() => {
 const distributionMechanism = ref({
   included: false,
   length: 2,
+})
+const lining = ref({
+  included: false,
+  value: 2,
 })
 
 watch(availableReducerModel, () => {
@@ -108,6 +118,7 @@ watchEffect(() => {
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     conveyorType.value = availableConveyorType.value.length > 0 ? availableConveyorType.value[0].value : '';
+    reducerType.value = availableReducer.value[0];
   }
 })
 
@@ -120,16 +131,28 @@ watchEffect(() => {
 
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
-    transporterLength.value =
-      availableTransporterLength.value.length > 0 ? availableTransporterLength.value[0] : [];
-    reducerType.value = availableReducer.value[0];
+    coverageType.value = availableCoverage.value.length > 0 ? availableCoverage.value[0] : [];
   }
 })
 
 watchEffect(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
-    coverageType.value = availableCoverage.value.length > 0 ? availableCoverage.value[0] : [];
+    lining.value.value = availableLining.value.length > 0 ? availableLining.value[0] : [];
   }
+})
+
+const price = computed(() => {
+  if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
+    let price = 0;
+    const tensionSection = availableByType.value.find((item) => item.name.includes('натяжна'));
+    const driveSection = availableByType.value.find((item) => item.name.includes('привідна'));
+    const tensionSectionPrice = Number(tensionSection.price);
+    const driveSectionPrice = Number(driveSection.price);
+
+    price= tensionSectionPrice + driveSectionPrice;
+    return price;
+  }
+  return 0;
 })
 
 </script>
@@ -151,6 +174,7 @@ watchEffect(() => {
           <v-img
             alt="Product image"
             src="banner22.jpg"></v-img>
+          <div>price : {{price}}</div>
           <div>productivity : <pre>{{productivity}}</pre></div>
           <div>transporterLength: <pre>{{ transporterLength}}</pre></div>
           <div>conveyorType :<pre>{{ conveyorType}}</pre></div>
@@ -158,6 +182,7 @@ watchEffect(() => {
           <div>distributionMechanism: <pre>{{ distributionMechanism }}</pre></div>
           <div>reducerModel: <pre>{{reducerModel}}</pre></div>
           <div>coverageType:<pre>{{coverageType}}</pre></div>
+          <div>Lining:<pre>{{lining}}</pre></div>
         </v-col>
         <v-col
           cols="12"
@@ -175,12 +200,12 @@ watchEffect(() => {
               label="Продуктивність транспортера"
             ></v-select>
 
-            <v-select
+            <v-text-field
               v-model="transporterLength"
-              :items="availableTransporterLength"
-              :rules="[(value) => !!value || 'Обовʼязкове поле']"
+              type="number"
+              :rules="[(value) => !!value || 'Обовʼязкове поле', (value) => value >=4 || 'Мінімальна довжина 4', (value) => value <= 100 || 'Максимальна довжина 100', (value) => value === Math.floor(value)|| 'Тільки цілі числа']"
               label="Довжина транспортера"
-            ></v-select>
+            ></v-text-field>
 
             <v-radio-group
               v-model="conveyorType"
@@ -250,6 +275,24 @@ watchEffect(() => {
                 :value="coverageItem"
               />
             </v-radio-group>
+
+            <fieldset v-if="availableLining?.length">
+              <v-checkbox
+                v-model="lining.included"
+                label="Футерування"
+              ></v-checkbox>
+
+              <v-select
+                v-model="lining.value"
+                :disabled="!lining.included"
+                :items="availableLining"
+                item-title="name"
+                append-icon="d"
+                label="Футеруваання"
+                return-object
+                prepend-icon="d"
+              ></v-select>
+            </fieldset>
           </v-form>
         </v-col>
       </v-row>
