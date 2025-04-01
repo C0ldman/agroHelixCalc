@@ -15,6 +15,10 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
   const mr = ref([])
   const isLoading = ref(false)
 
+  const normalizePrice = function(price) {
+    return Number(price.replace(/,/g, '.'))
+  }
+
   function updatePrices() {
     isLoading.value = true;
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${pricesSpreadsheetId}/values/${pricesSheetName}?key=${apiKey}`
@@ -29,7 +33,7 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
               conveyorType: line[1],
               name: line[2],
               calkPosition: line[3],
-              price: line[4],
+              price: normalizePrice(line[4]),
             }
           }).slice(1)
       })
@@ -71,7 +75,7 @@ export const useScrapperConveyorStore = defineStore('Scrapper conveyor', () => {
               name: line[0],
               kWt: line[1],
               gab: line[2],
-              price: line[3],
+              price: normalizePrice(line[3]),
             }
           })
           .slice(1)

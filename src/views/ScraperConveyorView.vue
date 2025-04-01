@@ -95,6 +95,12 @@ const availableReducerModel = computed(() => {
   })
 })
 
+const reducerHint = computed(() => {
+  const hint = scrapperConveyor.lengthKwt.filter((item) =>
+    item.prod === productivity.value && item.l === transporterLength.value);
+  return hint.length ? hint[0].kWt : ''
+})
+
 const distributionMechanism = ref({
   included: false,
   length: 2,
@@ -146,10 +152,22 @@ const price = computed(() => {
     let price = 0;
     const tensionSection = availableByType.value.find((item) => item.name.includes('натяжна'));
     const driveSection = availableByType.value.find((item) => item.name.includes('привідна'));
-    const tensionSectionPrice = Number(tensionSection.price);
-    const driveSectionPrice = Number(driveSection.price);
+    const transporterCost = availableByType.value.find((item) => item.name.includes(conveyorType.value === 'collapsible' ? 'розбірна' : 'зварна'));
+    let distributionMechanismCost = {price: 0};
+    if (distributionMechanism.value.included) distributionMechanismCost = availableByType.value.find((item) => item.name.includes('розподільний механізм'));
+    let liningCost = {price: 0};
+    if (lining.value.included) liningCost = lining.value.value;
 
-    price= tensionSectionPrice + driveSectionPrice;
+    const tensionSectionPrice = tensionSection.price;
+    const driveSectionPrice = driveSection.price;
+    const transporterPrice = transporterCost.price * (transporterLength.value - 1.5);
+    const chainPrice = chainType.value.price * transporterLength.value * 2;
+    const distributionMechanismPrice = distributionMechanismCost.price * distributionMechanism.value.length;
+    const reducerPrice = reducerModel.value.price;
+    const coveragePrice = coverageType.value.price * transporterLength.value;
+    const liningPrice = liningCost.price * transporterLength.value;
+
+    price= tensionSectionPrice + driveSectionPrice + transporterPrice + chainPrice + distributionMechanismPrice + reducerPrice + coveragePrice + liningPrice;
     return price;
   }
   return 0;
@@ -183,6 +201,7 @@ const price = computed(() => {
           <div>reducerModel: <pre>{{reducerModel}}</pre></div>
           <div>coverageType:<pre>{{coverageType}}</pre></div>
           <div>Lining:<pre>{{lining}}</pre></div>
+          <div>reducerHint:<pre>{{reducerHint}}</pre></div>
         </v-col>
         <v-col
           cols="12"
@@ -203,7 +222,7 @@ const price = computed(() => {
             <v-text-field
               v-model="transporterLength"
               type="number"
-              :rules="[(value) => !!value || 'Обовʼязкове поле', (value) => value >=4 || 'Мінімальна довжина 4', (value) => value <= 100 || 'Максимальна довжина 100', (value) => value === Math.floor(value)|| 'Тільки цілі числа']"
+              :rules="[(value) => !!value || 'Обовʼязкове поле', (value) => value >=4 || 'Мінімальна довжина 4', (value) => value <= 100 || 'Максимальна довжина 100', (value) => /([0-9]*)$|(^$)/.test(value) || 'Тільки цілі числа']"
               label="Довжина транспортера"
             ></v-text-field>
 
@@ -253,7 +272,7 @@ const price = computed(() => {
                   :value="reducerItem"
                 />
               </v-radio-group>
-
+              <div v-if="reducerHint">Рекомендована потужність: {{reducerHint}}кВт</div>
               <v-select
               v-model="reducerModel"
               :items="availableReducerModel"
