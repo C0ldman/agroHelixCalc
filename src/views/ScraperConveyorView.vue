@@ -105,6 +105,7 @@ const distributionMechanism = ref({
   included: false,
   length: 2,
 })
+
 const lining = ref({
   included: false,
   value: 2,
@@ -147,27 +148,55 @@ watchEffect(() => {
   }
 })
 
+const tensionSectionPrice = computed(() => {
+  const tensionSection = availableByType.value.find((item) => item.name.includes('натяжна'));
+  return tensionSection ? tensionSection.price : 0;
+})
+
+const driveSectionPrice = computed(() => {
+  const driveSection = availableByType.value.find((item) => item.name.includes('привідна'));
+  return driveSection ? driveSection.price : 0;
+})
+
+const transporterPrice = computed(() => {
+  const transporterCost = availableByType.value.find((item) => item.name.includes(conveyorType.value === 'collapsible' ? 'розбірна' : 'зварна'));
+  return transporterCost ? transporterCost.price * (transporterLength.value - 1.5) : 0;
+})
+
+const chainPrice = computed(() => {
+  const chainPrice = chainType.value.price * transporterLength.value * 2
+  return chainPrice ? chainPrice : 0;
+})
+
+const distributionMechanismPrice = computed(() => {
+  let distributionMechanismCost = {price: 0};
+  if (distributionMechanism.value.included) distributionMechanismCost = availableByType.value.find((item) => item.name.includes('розподільний механізм'));
+  const distributionMechanismPrice = distributionMechanismCost.price * distributionMechanism.value.length;
+  return distributionMechanismPrice ? distributionMechanismPrice : 0;
+})
+
+const reducerPrice = computed(() => {
+  const reducerPrice = reducerModel.value.price;
+  return reducerPrice ? reducerPrice : 0;
+})
+
+const coveragePrice = computed(() => {
+  const coveragePrice = coverageType.value.price * transporterLength.value;
+  return coveragePrice ? coveragePrice : 0;
+})
+
+const liningPrice = computed(() => {
+  let liningCost = {price: 0};
+  if (lining.value.included) liningCost = lining.value.value;
+  const liningPrice = liningCost.price * transporterLength.value;
+  return liningPrice ? liningPrice : 0;
+})
+
 const price = computed(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     let price = 0;
-    const tensionSection = availableByType.value.find((item) => item.name.includes('натяжна'));
-    const driveSection = availableByType.value.find((item) => item.name.includes('привідна'));
-    const transporterCost = availableByType.value.find((item) => item.name.includes(conveyorType.value === 'collapsible' ? 'розбірна' : 'зварна'));
-    let distributionMechanismCost = {price: 0};
-    if (distributionMechanism.value.included) distributionMechanismCost = availableByType.value.find((item) => item.name.includes('розподільний механізм'));
-    let liningCost = {price: 0};
-    if (lining.value.included) liningCost = lining.value.value;
 
-    const tensionSectionPrice = tensionSection.price;
-    const driveSectionPrice = driveSection.price;
-    const transporterPrice = transporterCost.price * (transporterLength.value - 1.5);
-    const chainPrice = chainType.value.price * transporterLength.value * 2;
-    const distributionMechanismPrice = distributionMechanismCost.price * distributionMechanism.value.length;
-    const reducerPrice = reducerModel.value.price;
-    const coveragePrice = coverageType.value.price * transporterLength.value;
-    const liningPrice = liningCost.price * transporterLength.value;
-
-    price= tensionSectionPrice + driveSectionPrice + transporterPrice + chainPrice + distributionMechanismPrice + reducerPrice + coveragePrice + liningPrice;
+    price= tensionSectionPrice.value + driveSectionPrice.value + transporterPrice.value + chainPrice.value + distributionMechanismPrice.value + reducerPrice.value + coveragePrice.value + liningPrice.value;
     return price;
   }
   return 0;
@@ -192,16 +221,50 @@ const price = computed(() => {
           <v-img
             alt="Product image"
             src="banner22.jpg"></v-img>
-          <div>price : {{price}}</div>
-          <div>productivity : <pre>{{productivity}}</pre></div>
-          <div>transporterLength: <pre>{{ transporterLength}}</pre></div>
-          <div>conveyorType :<pre>{{ conveyorType}}</pre></div>
-          <div>chainType: <pre>{{chainType}}</pre></div>
-          <div>distributionMechanism: <pre>{{ distributionMechanism }}</pre></div>
-          <div>reducerModel: <pre>{{reducerModel}}</pre></div>
-          <div>coverageType:<pre>{{coverageType}}</pre></div>
-          <div>Lining:<pre>{{lining}}</pre></div>
-          <div>reducerHint:<pre>{{reducerHint}}</pre></div>
+
+          <v-table
+            class="ma-5 elevation-1"
+            density="comfortable"
+            hover>
+            <tbody>
+            <tr>
+              <td>Натяжна секція</td>
+              <td class="text-center">{{ tensionSectionPrice }}</td>
+            </tr>
+            <tr>
+              <td>Привідна секція</td>
+              <td class="text-center">{{ driveSectionPrice }}</td>
+            </tr>
+            <tr>
+              <td>Транспортер</td>
+              <td class="text-center">{{ transporterPrice }}</td>
+            </tr>
+            <tr>
+              <td>Ланцюг</td>
+              <td class="text-center">{{ chainPrice }}</td>
+            </tr>
+            <tr v-show="distributionMechanism.included">
+              <td>Розподільчий механізм</td>
+              <td class="text-center">{{ distributionMechanismPrice }}</td>
+            </tr>
+            <tr>
+              <td>Редуктор</td>
+              <td class="text-center">{{ reducerPrice }}</td>
+            </tr>
+            <tr>
+              <td>Покриття</td>
+              <td class="text-center">{{ coveragePrice }}</td>
+            </tr>
+            <tr v-show="lining.included">
+              <td>Футерування</td>
+              <td class="text-center">{{ liningPrice }}</td>
+            </tr>
+            <tr>
+              <td class="text-body-1">Разом</td>
+              <td class="text-center text-body-1">{{ price }}</td>
+            </tr>
+            </tbody>
+          </v-table>
         </v-col>
         <v-col
           cols="12"
