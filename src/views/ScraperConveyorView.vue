@@ -111,6 +111,13 @@ const lining = ref({
   value: 2,
 })
 
+  const imageByProductivity = {
+    25: 'TSH25.jpg',
+    50: 'TSH50.jpg',
+    100: 'TSH100.jpg',
+    200: 'TSH200.jpg'
+  }
+
 watch(availableReducerModel, () => {
   reducerModel.value = availableReducerModel.value[0]
 })
@@ -192,6 +199,10 @@ const liningPrice = computed(() => {
   return liningPrice ? liningPrice : 0;
 })
 
+const transporterImage = computed(() => {
+  return imageByProductivity[productivity.value] || 'banner22.jpg'
+})
+
 const price = computed(() => {
   if (!scrapperConveyor.isLoading && scrapperConveyor.prices.length > 0) {
     let price = 0;
@@ -220,7 +231,7 @@ const price = computed(() => {
           sm="6">
           <v-img
             alt="Product image"
-            src="banner22.jpg"></v-img>
+            :src="transporterImage"></v-img>
 
           <v-table
             class="ma-5 elevation-1"
@@ -295,7 +306,9 @@ const price = computed(() => {
               <v-radio
                 v-for="conveyor in availableConveyorType"
                 :label="conveyor.name"
-                :value="conveyor.value"></v-radio>
+                :value="conveyor.value"
+                :key="conveyor.value"
+              ></v-radio>
             </v-radio-group>
 
             <v-select
